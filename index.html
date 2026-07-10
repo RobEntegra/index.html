@@ -161,7 +161,7 @@ footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--concrete);dis
       <div class="track"><div class="fill" id="barFill" style="width:0%"></div></div>
       <div class="cap"><span>Regional land + new build</span><span>Your metro sale proceeds</span></div>
     </div>
-    <a class="cta" href="https://www.entegra.com.au/contact-us">Let's talk</a>
+    <a class="cta" href="https://marketing.entegra.com.au/meetings/rob-sobey/meeting_request">Let's talk</a>
   </div>
 
   <div class="share">
@@ -320,9 +320,30 @@ function buildPdf(name, company){
   doc.text(body, M, y); y += body.length*5 + 8;
   const disc = doc.splitTextToSize("Indicative estimates only, not a valuation. Excludes tax (including CGT and GST), stamp duty, relocation costs and financing. Entegra is not a licensed valuer or financial adviser. Obtain independent professional advice before making property or investment decisions.", 170);
   doc.setFontSize(8.5); doc.setTextColor(140,140,140);
-  doc.text(disc, M, y); y += disc.length*4 + 10;
+  doc.text(disc, M, y); y += disc.length*4 + 8;
+
+  // FROM / TO photos, pulled from the page's own embedded images
+  try{
+    const css = document.querySelector("style").textContent;
+    const b64 = [...css.matchAll(/base64,([A-Za-z0-9+\/=]+)/g)].map(m=>m[1]);
+    if(b64.length >= 2){
+      const imgH = 48;
+      const cityW = imgH * 1200/900;   // city photo aspect
+      const lakeW = imgH * 900/1139;   // lake crop aspect
+      const gap = 18;
+      let x = (210 - (cityW + lakeW + gap)) / 2;
+      doc.setFontSize(11); doc.setTextColor(150,92,70); doc.setFont("helvetica","bold");
+      doc.text("FROM", x + cityW/2, y, {align:"center"});
+      doc.text("TO", x + cityW + gap + lakeW/2, y, {align:"center"});
+      y += 3;
+      doc.addImage("data:image/jpeg;base64," + b64[0], "JPEG", x, y, cityW, imgH);
+      doc.addImage("data:image/jpeg;base64," + b64[1], "JPEG", x + cityW + gap, y, lakeW, imgH);
+      y += imgH + 10;
+    }
+  }catch(e){ /* PDF still saves without photos */ }
+
   doc.setFontSize(10); doc.setTextColor(58,58,58); doc.setFont("helvetica","bold");
-  doc.text("Entegra  ·  Regional infrastructure partner since 1986  ·  entegra.com.au  ·  1300 296 206", M, y);
+  doc.text("Entegra  ·  Regional infrastructure partner since 1986  ·  entegra.com.au  ·  1300 296 206", M, Math.max(y, 284));
   doc.save("entegra-relocation-number-test.pdf");
 }
 
